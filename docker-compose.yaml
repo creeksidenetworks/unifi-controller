@@ -1,0 +1,55 @@
+services:
+  unifi-controller:
+    image: jacobalberty/unifi:latest
+    container_name: unifi-controller
+    restart: unless-stopped
+    volumes:
+      - unifi-data:/unifi
+    environment:
+      - TZ=Asia/Dubai
+    ports:
+      - "3478:3478/udp"
+      - "8080:8080"
+      - "8443:8443"
+      - "8880:8880"
+      - "8843:8843"
+      - "6789:6789"
+      - "5514:5514/udp"
+
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    environment:
+      - DB_MYSQL_HOST=db
+      - DB_MYSQL_PORT=3306
+      - DB_MYSQL_USER=npm
+      - DB_MYSQL_PASSWORD=Good2Great
+      - DB_MYSQL_NAME=npm
+    depends_on:
+      - db
+    volumes:
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+
+  db:
+    image: mariadb:latest
+    container_name: npm-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=Good2Great
+      - MYSQL_DATABASE=npm
+      - MYSQL_USER=npm
+      - MYSQL_PASSWORD=Good2Great
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  unifi-data:
+  npm-data:
+  npm-letsencrypt:
+  db-data:
